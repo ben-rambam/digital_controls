@@ -8,9 +8,10 @@
 #ifndef INCLUDES_H
 #define	INCLUDES_H
 
+#include <peripheral/spi.h>
+
 #include "ADC.h"
 #include "BASICSHIELD.h"
-#include "spi.h"
 #include "SYS.h"
 #include "UART1.h"
 
