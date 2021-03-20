@@ -43,13 +43,13 @@
 // Global Variables
 // ------------------------------------------------------------
 // Sample period or frequency:
-#define T           (0.2)   // Sample period (s) < 0.209 s
+#define T           (400e-6)   // Sample period (s) < 0.209 s
 // Alternatively, define sample frequency (Hz) (uncomment next 2 lines)
 // #define F_S        (500)    // Sample frequency (Hz) > 4.77 Hz
 // #define T          (1/F_S)  // Sample period (s)
 
 // Reference signal definition:
-#define F_R         (0.1)   // Reference waveform frequency (Hz) < 1/(2*T)
+#define F_R         (100)   // Reference waveform frequency (Hz) < 1/(2*T)
 #define R_HI_V      (3.0)   // High magnitude of reference wave (V) <= 3.3
 #define R_LO_V      (1.0)   // Low magnitude of reference wave (V) >= 0.0
 
@@ -57,8 +57,8 @@
 uint16_t volatile phaseAccumulator = 0; // Holds DDS phase
 uint16_t          phaseStep;            // DDS tuning word
 uint8_t  volatile waveTableIndex = 0;   // index for wave lookup (upper 8 bits of phaseAccumulator)
-int32_t           rHiInt;               // high integer value of reference signal
-int32_t           rLoInt;               // low integer value of reference signal
+int32_t           rHighInt;               // high integer value of reference signal
+int32_t           rLowInt;               // low integer value of reference signal
 int32_t  volatile rk = 0;               // current value of reference signal, r(k)
 
 // DDS table for generating a sine waveshape using DDS
@@ -153,7 +153,7 @@ void __ISR(_TIMER_2_VECTOR, ipl1AUTO) T2InterruptHandler(void) {
     // 12-bit fixed-point format for DAC,
     // then scale to desired high and low amplitudes.
     // This is an integer value (not in units of Volts)
-    rk = ((SINETABLE[waveTableIndex] << 4)*(rHiInt - rLoInt))/DAC_MAX_INT + rLoInt;
+    rk = ((SINETABLE[waveTableIndex] << 4)*(rHighInt - rLowInt))/DAC_MAX_INT + rLowInt;
     
     // Alternative square wave reference signal
     // First half of wave has rLowInt amplitude,
@@ -181,7 +181,10 @@ void __ISR(_TIMER_2_VECTOR, ipl1AUTO) T2InterruptHandler(void) {
     
     // Calculate current control signal u(k)
     // This is where your control algorithm D(z) would go
-    uk = rk; // Open-loop (no feedback)
+    //uk = rk; // Open-loop (no feedback)
+    
+    //part anti-aliasing
+    uk = yk;
     // Check for control saturation and limit it
     if(uk > U_MAX)
         uk = U_MAX;
@@ -201,7 +204,7 @@ void __ISR(_TIMER_2_VECTOR, ipl1AUTO) T2InterruptHandler(void) {
     waveTableIndex = phaseAccumulator >> 8; // use top 8 bits as wavetable index
     
     // Write detected value y(k) to UART (use for testing)
-    printf("y(k) = %4d mV\n\r", yk); // transmit yk to UART1
+    //printf("y(k) = %4d mV\n\r", yk); // transmit yk to UART1
     
     // clear the interrupt flag and exit
     mT2ClearIntFlag();
@@ -223,8 +226,8 @@ int main(void) {
     // These need to be calculated just once at the beginning of code execution
     // then is used by the ISR.
     phaseStep = F_R*0x10000*T;
-    rHiInt = (R_HI_V*DAC_MAX_INT)/DAC_MAX_V; // Integer value for high reference signal
-    rLoInt = (R_LO_V*DAC_MAX_INT)/DAC_MAX_V; // Integer value for low reference signal
+    rHighInt = (R_HI_V*DAC_MAX_INT)/DAC_MAX_V; // Integer value for high reference signal
+    rLowInt = (R_LO_V*DAC_MAX_INT)/DAC_MAX_V; // Integer value for low reference signal
 
     while(TRUE) { // This loop runs except when the timer interrupt occurs
         
