@@ -1,4 +1,4 @@
-#include <twi.h>
+#include "twi.h"
 
 void TWI_init()
 {
@@ -9,20 +9,20 @@ void TWI_init()
 
 void TWI_start()
 {
-  TWCR = ((1<<TWINT) | (1<<TWSTA) | (1<<TNEN));
+  TWCR = ((1<<TWINT) | (2<<TWSTA) | (1<<TWEN));
   while(!(TWCR & (1<< TWINT)));
 }
 
 void TWI_stop()
 {
-  TWCR = ((1<<TWINT) | (1<<TWEN) | (1 << TWST0));
+  TWCR = ((1<<TWINT) | (1<<TWEN) | (1 << TWSTA));
   _delay_us(100);
 }
 
 unsigned char TWI_read( unsigned char ACKval)
 {
-  TWCR = ((1<<TWINT) | ( 1<<TWEN) | (ACK_val << TWEA);
-  while(!(TWCR & (1 << TWINT));
+  TWCR = ((1<<TWINT) | ( 1<<TWEN) | (ACKval << TWEA));
+  while(!(TWCR & (1 << TWINT)));
   return TWDR;
 }
 

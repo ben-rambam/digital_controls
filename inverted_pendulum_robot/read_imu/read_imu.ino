@@ -1,7 +1,9 @@
 #include <Wire.h>
-#include <twi.h> 
+#include "twi.h" 
 
 const int MPU_ADDR = 0x68;
+const unsigned char ACK = 1;
+const unsigned char NACK = 0;
 
 enum MPU_OUT_REGISTERS
 {
@@ -66,14 +68,19 @@ void loop() {
   //I am assuming that we don't need to request for number of register to fill. 
   
   // "Wire.read()<<8 | Wire.read();" means two registers are read and stored in the same variable
-  accelerometer_x = TWI_read(ACCEL_XOUT_H)<<8 | TWI_read(ACCEL_XOUT_L); // reading registers: 0x3B (ACCEL_XOUT_H) and 0x3C (ACCEL_XOUT_L)
-  accelerometer_y = TWI_read(ACCEL_YOUT_H)<<8 | TWI_read(ACCEL_YOUT_L); // reading registers: 0x3D (ACCEL_YOUT_H) and 0x3E (ACCEL_YOUT_L)
-  accelerometer_z = TWI_read(ACCEL_ZOUT_H)<<8 | TWI_read(ACCEL_ZOUT_L); // reading registers: 0x3F (ACCEL_ZOUT_H) and 0x40 (ACCEL_ZOUT_L)
-  temperature = TWI_read(TEMP_OUT_H)<<8 | TWI_read(TEMP_OUT_L); // reading registers: 0x41 (TEMP_OUT_H) and 0x42 (TEMP_OUT_L)
-  gyro_x = TWI_read(GYRO_XOUT_H)<<8 | TWI_read(GYRO_XOUT_L); // reading registers: 0x43 (GYRO_XOUT_H) and 0x44 (GYRO_XOUT_L)
-  gyro_y = TWI_read((GYRO_YOUT_H))<<8 | TWI_read((GYRO_YOUT_L)); // reading registers: 0x45 (GYRO_YOUT_H) and 0x46 (GYRO_YOUT_L)
-  gyro_z = TWI_read((GYRO_ZOUT_H))<<8 | TWI_read(GYRO_ZOUT_L); // reading registers: 0x47 (GYRO_ZOUT_H) and 0x48 (GYRO_ZOUT_L)
+  accelerometer_x = TWI_read(ACK)<<8 | TWI_read(ACK); // reading registers: 0x3B (ACCEL_XOUT_H) and 0x3C (ACCEL_XOUT_L)
+  accelerometer_y = TWI_read(ACK)<<8 | TWI_read(ACK); // reading registers: 0x3D (ACCEL_YOUT_H) and 0x3E (ACCEL_YOUT_L)
+  accelerometer_z = TWI_read(ACK)<<8 | TWI_read(ACK); // reading registers: 0x3F (ACCEL_ZOUT_H) and 0x40 (ACCEL_ZOUT_L)
+  temperature = TWI_read(ACK)<<8 | TWI_read(ACK); // reading registers: 0x41 (TEMP_OUT_H) and 0x42 (TEMP_OUT_L)
+  gyro_x = TWI_read(ACK)<<8 | TWI_read(ACK); // reading registers: 0x43 (GYRO_XOUT_H) and 0x44 (GYRO_XOUT_L)
+  gyro_y = TWI_read(ACK)<<8 | TWI_read(ACK); // reading registers: 0x45 (GYRO_YOUT_H) and 0x46 (GYRO_YOUT_L)
+  gyro_z = TWI_read(ACK)<<8 | TWI_read(ACK); // reading registers: 0x47 (GYRO_ZOUT_H) and 0x48 (GYRO_ZOUT_L)
+
+  TWI_read(NACK);				// Tell the TWI to stop reading
   
+
+  TWI_stop();
+
 
   // "Wire.read()<<8 | Wire.read();" means two registers are read and stored in the same variable
   //accelerometer_x = Wire.read()<<8 | Wire.read(); // reading registers: 0x3B (ACCEL_XOUT_H) and 0x3C (ACCEL_XOUT_L)
@@ -97,4 +104,5 @@ void loop() {
   
   // delay
   delay(1000);
+
 }
