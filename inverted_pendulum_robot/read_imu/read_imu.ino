@@ -2,6 +2,24 @@
 
 const int MPU_ADDR = 0x68;
 
+enum MPU_OUT_REGISTERS
+{
+  ACCEL_XOUT_H = 0X3B,
+  ACCEL_XOUT_L,
+  ACCEL_YOUT_H,
+  ACCEL_YOUT_L,
+  ACCEL_ZOUT_H,
+  ACCEL_ZOUT_L,
+  TEMP_OUT_H,
+  TEMP_OUT_L,
+  GYRO_XOUT_H,
+  GYRO_XOUT_L,
+  GYRO_YOUT_H,
+  GYRO_YOUT_L,
+  GYRO_ZOUT_H,
+  GYRO_ZOUT_L,
+  NUM_REGISTERS
+};
 
 int16_t accelerometer_x, accelerometer_y, accelerometer_z; // variables for accelerometer raw data
 int16_t gyro_x, gyro_y, gyro_z; // variables for gyro raw data
@@ -26,9 +44,9 @@ void setup() {
 }
 void loop() {
   Wire.beginTransmission(MPU_ADDR);
-  Wire.write(0x3B); // starting with register 0x3B (ACCEL_XOUT_H) [MPU-6000 and MPU-6050 Register Map and Descriptions Revision 4.2, p.40]
+  Wire.write(ACCEL_XOUT_H); // starting with register 0x3B (ACCEL_XOUT_H) [MPU-6000 and MPU-6050 Register Map and Descriptions Revision 4.2, p.40]
   Wire.endTransmission(false); // the parameter indicates that the Arduino will send a restart. As a result, the connection is kept active.
-  Wire.requestFrom(MPU_ADDR, 7*2, true); // request a total of 7*2=14 registers
+  Wire.requestFrom(MPU_ADDR, MPU_OUT_REGISTERS::NUM_REGISTERS, true); // request a total of 7*2=14 registers
   
   // "Wire.read()<<8 | Wire.read();" means two registers are read and stored in the same variable
   accelerometer_x = Wire.read()<<8 | Wire.read(); // reading registers: 0x3B (ACCEL_XOUT_H) and 0x3C (ACCEL_XOUT_L)
