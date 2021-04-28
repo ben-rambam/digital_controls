@@ -1,6 +1,11 @@
 #include <Wire.h>
 #include "twi.h" 
 
+
+#define MPU_READ 0xD1
+#define MPU_WRITE 0xD0
+
+
 const int MPU_ADDR = 0x68;
 const unsigned char ACK = 1;
 const unsigned char NACK = 0;
@@ -40,57 +45,34 @@ void setup() {
   
   TWI_init();			// Initialize the TWI
   TWI_start();			// Send a start signal
-  TWI_write(MPU_ADDR);		// Send the address to read/write data from/to
-  TWI_write(0x68);		// Set the address
+  TWI_write(MPU_WRITE);		// Send the address to read/write data from/to
+  TWI_write(0x6B);		// Set the address
   TWI_write(0);			// Set to zero (wakes up the MPU-6050)
   TWI_stop();			// Send the stop signal
-
-  //Wire.begin();
-  //Wire.beginTransmission(MPU_ADDR); // Begins a transmission to the I2C slave (GY-521 board)
-  //Wire.write(0x6B); // PWR_MGMT_1 register
-  //Wire.write(0); // set to zero (wakes up the MPU-6050)
-  //Wire.endTransmission(true);
-
   
 }
 void loop() {
-  //Wire.beginTransmission(MPU_ADDR);
-  //Wire.write(ACCEL_XOUT_H); // starting with register 0x3B (ACCEL_XOUT_H) [MPU-6000 and MPU-6050 Register Map and Descriptions Revision 4.2, p.40]
-  //Wire.endTransmission(false); // the parameter indicates that the Arduino will send a restart. As a result, the connection is kept active.
-  //Wire.requestFrom(MPU_ADDR, MPU_OUT_REGISTERS::NUM_REGISTERS, true); // request a total of 7*2=14 registers
-  
+ 
   TWI_start();		
-  TWI_write(MPU_ADDR);
+  TWI_write(MPU_WRITE);
   TWI_write(ACCEL_XOUT_H);
 
   TWI_start();
   
+  TWI_write(MPU_READ);
+
   //I am assuming that we don't need to request for number of register to fill. 
   
-  // "Wire.read()<<8 | Wire.read();" means two registers are read and stored in the same variable
   accelerometer_x = TWI_read(ACK)<<8 | TWI_read(ACK); // reading registers: 0x3B (ACCEL_XOUT_H) and 0x3C (ACCEL_XOUT_L)
   accelerometer_y = TWI_read(ACK)<<8 | TWI_read(ACK); // reading registers: 0x3D (ACCEL_YOUT_H) and 0x3E (ACCEL_YOUT_L)
   accelerometer_z = TWI_read(ACK)<<8 | TWI_read(ACK); // reading registers: 0x3F (ACCEL_ZOUT_H) and 0x40 (ACCEL_ZOUT_L)
   temperature = TWI_read(ACK)<<8 | TWI_read(ACK); // reading registers: 0x41 (TEMP_OUT_H) and 0x42 (TEMP_OUT_L)
   gyro_x = TWI_read(ACK)<<8 | TWI_read(ACK); // reading registers: 0x43 (GYRO_XOUT_H) and 0x44 (GYRO_XOUT_L)
   gyro_y = TWI_read(ACK)<<8 | TWI_read(ACK); // reading registers: 0x45 (GYRO_YOUT_H) and 0x46 (GYRO_YOUT_L)
-  gyro_z = TWI_read(ACK)<<8 | TWI_read(ACK); // reading registers: 0x47 (GYRO_ZOUT_H) and 0x48 (GYRO_ZOUT_L)
-
-  TWI_read(NACK);				// Tell the TWI to stop reading
-  
+  gyro_z = TWI_read(ACK)<<8 | TWI_read(NACK); // reading registers: 0x47 (GYRO_ZOUT_H) and 0x48 (GYRO_ZOUT_L)
 
   TWI_stop();
 
-
-  // "Wire.read()<<8 | Wire.read();" means two registers are read and stored in the same variable
-  //accelerometer_x = Wire.read()<<8 | Wire.read(); // reading registers: 0x3B (ACCEL_XOUT_H) and 0x3C (ACCEL_XOUT_L)
-  //accelerometer_y = Wire.read()<<8 | Wire.read(); // reading registers: 0x3D (ACCEL_YOUT_H) and 0x3E (ACCEL_YOUT_L)
-  //accelerometer_z = Wire.read()<<8 | Wire.read(); // reading registers: 0x3F (ACCEL_ZOUT_H) and 0x40 (ACCEL_ZOUT_L)
-  //temperature = Wire.read()<<8 | Wire.read(); // reading registers: 0x41 (TEMP_OUT_H) and 0x42 (TEMP_OUT_L)
-  //gyro_x = Wire.read()<<8 | Wire.read(); // reading registers: 0x43 (GYRO_XOUT_H) and 0x44 (GYRO_XOUT_L)
-  //gyro_y = Wire.read()<<8 | Wire.read(); // reading registers: 0x45 (GYRO_YOUT_H) and 0x46 (GYRO_YOUT_L)
-  //gyro_z = Wire.read()<<8 | Wire.read(); // reading registers: 0x47 (GYRO_ZOUT_H) and 0x48 (GYRO_ZOUT_L)
-  
   // print out data
   Serial.print("aX = "); Serial.print(convert_int16_to_str(accelerometer_x));
   Serial.print(" | aY = "); Serial.print(convert_int16_to_str(accelerometer_y));
