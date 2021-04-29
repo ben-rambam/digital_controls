@@ -2,7 +2,6 @@
 #define MOTOR_CONTROL_H
 
 #include <avr/io.h>
-#include <Wire.h>
 
 enum MotorDirection
 {

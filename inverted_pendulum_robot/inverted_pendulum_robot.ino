@@ -60,61 +60,28 @@ void setup() {
   Wire.write(0x6B); // PWR_MGMT_1 register
   Wire.write(0); // set to zero (wakes up the MPU-6050)
   Wire.endTransmission(true);
+  
+  if(!motor_init(MOTOR_A))
+    Serial.println("Bad motor enum for init");
 
   if(!motor_init(MOTOR_B))
 	  Serial.println("Bad motor enum for init");
-
-  if(!motor_set_duty_cycle(MOTOR_B, 90))
-	  Serial.println("Bad motor enum for duty cycle");
-
-  if(!motor_set_dir(MOTOR_B, MOTOR_DIR_FORWARD))
-	  Serial.println("Bad motor enum for dir");
-
   //motor_init(MOTOR_B);
 }
 
 
 void loop() {
 
-  static int motorSpeed = 0;
-  static int motorSpeedCounter = 0;
-  static int motorSpeedDirection = 1;
-  static enum MotorDirection motorDirection = MOTOR_DIR_FORWARD;
+ 
 
-  motorSpeedCounter = (motorSpeedCounter+1)%2;
-  if(motorSpeedCounter == 0)
-  {
-	  motorSpeed += motorSpeedDirection;
-	  motor_set_duty_cycle(MOTOR_B, motorSpeed);
-  }
-
-  if(motorSpeed >= 100)
-  {
-	  motorSpeedDirection = -1;
-  }
-
-  if(motorSpeed <= 0)
-  {
-	  motorSpeed = 1;
-	  motorSpeedDirection = 1;
-	  if(motorDirection == MOTOR_DIR_FORWARD)
-	  {
-		  motorDirection = MOTOR_DIR_BACKWARD;
-	  }
-	  else if(motorDirection == MOTOR_DIR_BACKWARD)
-	  {
-		  motorDirection = MOTOR_DIR_FORWARD;
-	  }
-	  motor_set_dir(MOTOR_B, motorDirection);
-  }
-
-
+  /*
   Serial.print("speed: ");
   Serial.print(motorSpeed);
   Serial.print("speed direction: ");
   Serial.print(motorSpeedDirection);
   Serial.print("direction: ");
   Serial.println(motorDirection);
+  */
 
   Wire.beginTransmission(MPU_ADDR);
   Wire.write(ACCEL_XOUT_H); // starting with register 0x3B (ACCEL_XOUT_H) [MPU-6000 and MPU-6050 Register Map and Descriptions Revision 4.2, p.40]
@@ -132,20 +99,54 @@ void loop() {
 
   MadgwickAHRSupdateIMU(gyro_x, gyro_y, gyro_z, accel_x, accel_y, accel_z);
 
-
+  fakeController();
 
   char float_str[32];
 
-  //dtostrf(get_yaw(), 4, 4, float_str);
-  //sprintf(tmp_str, " | yaw = %s", float_str);
-  //Serial.print(tmp_str );
-  //dtostrf(get_pitch(), 4, 4, float_str);
-  //sprintf(tmp_str, " | pitch = %s", float_str);
-  //Serial.print(tmp_str );
-  //dtostrf(get_roll(), 4, 4, float_str);
-  //sprintf(tmp_str, " | roll = %s", float_str);
-  //Serial.print(tmp_str );
-  //Serial.println();
+  dtostrf(get_yaw(), 4, 4, float_str);
+  sprintf(tmp_str, " | yaw = %s", float_str);
+  Serial.print(tmp_str );
+  dtostrf(get_pitch(), 4, 4, float_str);
+  sprintf(tmp_str, " | pitch = %s", float_str);
+  Serial.print(tmp_str );
+  dtostrf(get_roll(), 4, 4, float_str);
+  sprintf(tmp_str, " | roll = %s", float_str);
+  Serial.print(tmp_str );
+  Serial.println();
 
   delay(10);
+}
+
+void fakeController()
+{
+
+  //ok. Let's do this. 
+  static int motorSpeed = 0;
+  static enum MotorDirection motorDirection = MOTOR_DIR_FORWARD;
+
+  float positivePitch = fabs(get_pitch());
+  motorSpeed = 160*positivePitch;
+  motor_set_duty_cycle(MOTOR_A, motorSpeed);
+  motor_set_duty_cycle(MOTOR_B, motorSpeed);
+    
+  if(get_pitch() > 0)
+  {
+    motorDirection = MOTOR_DIR_BACKWARD;
+    
+    motor_set_dir(MOTOR_A, motorDirection);
+    motor_set_dir(MOTOR_B, motorDirection);
+  }
+  else if (get_pitch() < 0)
+  {
+    motorDirection = MOTOR_DIR_FORWARD;
+    
+    motor_set_dir(MOTOR_A, motorDirection);
+    motor_set_dir(MOTOR_B, motorDirection);
+  }
+  Serial.print("speed: ");
+  Serial.print(motorSpeed);
+
+  Serial.print("\tdirection: ");
+  Serial.println(motorDirection);
+  
 }
