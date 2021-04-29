@@ -1,23 +1,12 @@
-#ifndef MOTOR_CONTROL_H
-#define MOTOR_CONTROL_H
-
+//Includes
 #include <avr/io.h>
+#include <util/delay.h>
+#include <string.h>
+#include <avr/interrupt.h>
+#include "motor_control.h"
 
-enum MotorDirection
-{
-	MOTOR_DIR_FORWARD,
-	MOTOR_DIR_BACKWARD,
-};
 
-enum MotorSelect
-{
-	MOTOR_A,
-	MOTOR_B,
-};
-
-static const uint32_t TOP = 639;
-
-bool motor_init(enum MotorSelect motorSelect)
+int motor_init(enum MotorSelect motorSelect)
 {
 	if (motorSelect == MOTOR_A)
 	{
@@ -67,12 +56,12 @@ bool motor_init(enum MotorSelect motorSelect)
 	}
 	else
 	{
-		return false;
+		return 0;
 	}
-	return true;
+	return 1;
 }
 
-bool motor_set_dir(enum MotorSelect motorSelect, enum MotorDirection motorDirection)
+int motor_set_dir(enum MotorSelect motorSelect, enum MotorDirection motorDirection)
 {
 	if(motorSelect == MOTOR_A) //Direction A is on pin 12 (PB6)
 	{
@@ -81,7 +70,7 @@ bool motor_set_dir(enum MotorSelect motorSelect, enum MotorDirection motorDirect
 		else if( motorDirection == MOTOR_DIR_BACKWARD )
 			PORTB &= ~(1<<PB6);
 		else //explode the world. This should never occur.
-			return false;
+			return 0;
 	}
 	else if(motorSelect == MOTOR_B) //Direction B is on pin 13 (PB7)
 	{
@@ -90,33 +79,39 @@ bool motor_set_dir(enum MotorSelect motorSelect, enum MotorDirection motorDirect
 		else if( motorDirection == MOTOR_DIR_BACKWARD )
 			PORTB &= ~(1<<PB7);
 		else //explode the world. This should never occur.
-			return false;
+			return 0;
 	}
 	else //explode the world. This should never occur.
 	{
-		return false;
+		return 0;
 	}
 
-	return true;
+	return 1;
 }
 
-bool motor_set_duty_cycle(enum MotorSelect motorSelect, int duty_cycle)
+int motor_set_duty_cycle(enum MotorSelect motorSelect, int duty_cycle)
 {
 	if(motorSelect == MOTOR_A) //Direction A is on pin 12 (PB6)
 	{
 		uint32_t val = duty_cycle * TOP / 100;
+    if(val > TOP)
+    {
+      val = TOP;
+    }
 		OCR3C = val;
 	}
 	else if(motorSelect == MOTOR_B) //Direction B is on pin 13 (PB7)
 	{
 		uint32_t val = duty_cycle * TOP / 100;
+    if(val > TOP)
+    {
+      val = TOP;
+    }
 		OCR1A = val;
 	}
 	else //explode the world. This should never occur.
 	{
-		return false;
+		return 0;
 	}
-	return true;
+	return 1;
 }
-
-#endif //MOTOR_CONTROL_H
