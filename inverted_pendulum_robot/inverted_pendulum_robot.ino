@@ -1,6 +1,6 @@
 #include <Wire.h>
 #include "MadgwickAHRS.h"
-#include "motor-control.hpp"
+#include "motor_control.h"
 
 const int MPU_ADDR = 0x68;
 
@@ -72,17 +72,6 @@ void setup() {
 
 void loop() {
 
- 
-
-  /*
-  Serial.print("speed: ");
-  Serial.print(motorSpeed);
-  Serial.print("speed direction: ");
-  Serial.print(motorSpeedDirection);
-  Serial.print("direction: ");
-  Serial.println(motorDirection);
-  */
-
   Wire.beginTransmission(MPU_ADDR);
   Wire.write(ACCEL_XOUT_H); // starting with register 0x3B (ACCEL_XOUT_H) [MPU-6000 and MPU-6050 Register Map and Descriptions Revision 4.2, p.40]
   Wire.endTransmission(false); // the parameter indicates that the Arduino will send a restart. As a result, the connection is kept active.
@@ -125,7 +114,7 @@ void fakeController()
   static enum MotorDirection motorDirection = MOTOR_DIR_FORWARD;
 
   float positivePitch = fabs(get_pitch());
-  motorSpeed = 160*positivePitch;
+  motorSpeed = 200*positivePitch;
   motor_set_duty_cycle(MOTOR_A, motorSpeed);
   motor_set_duty_cycle(MOTOR_B, motorSpeed);
     
