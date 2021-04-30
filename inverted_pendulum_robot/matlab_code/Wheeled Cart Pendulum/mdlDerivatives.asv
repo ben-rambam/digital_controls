@@ -1,0 +1,47 @@
+function xdot=mdlDerivatives(t,x,u,m,g,L,M,b)
+% x(1) = x
+% x(2) = xdot
+% x(3) = theta
+% x(4) = theta dot
+
+%m = [100,1] %initialize masses
+%I(1)=1/12*m(1)*L^2; %Moment of inertia based on the mass and length of rod
+%I(2)=0; %consider inertia of wheel to be neglegible
+%R = L/2;
+%Equations used for the dynamics of the system, found by solving forc
+%thetadoubledot and then substituting to find xdoubledot
+%A = m(1)*L
+%B = m(1)+m(2)+I(2)/R^2
+%C = A*L
+%tau = 0; %u(1)
+%thetadoubledot = (-x(4)^2*cos(x(3))*sin(x(3))*(A^2/B-C)+A*-g*sin(x(3))+tau)/...
+%                    (-A^2/B*cos(x(3)^2) + C*cos(x(3))^2 + I(1));
+%xdoubledot = (A*(x(4)^2)*sin(x(3)) - A*thetadoubledot*cos(x(3)))/B
+
+%adjust state of x to next state
+
+%xdot(1) = x(2)
+%xdot(2) = xdoubledot
+%xdot(3) = x(4)
+%xdot(4) = thetadoubledot
+
+m = 1;
+I=1/12*m*L^2; %Moment of inertia based on the mass and length of rod
+r = L/2;
+R = 0.0325; %radius of wheel
+%Equations used for the dynamics of the system, found by solving for
+%thetadoubledot and then substituting to find xdoubledot
+thetatop = -m*g*r*sin(x(3))-(m*r*cos(x(3)))/(M*m)*(u*R-b*x(2)+m*r*x(4)^2*sin(x(3)));
+thetabottom = (I+m*r^2)+(m*r*cos(x(3))*(-m*r*cos(x(3))))/(M+m);
+
+thetacombined = thetatop/thetabottom;
+
+
+%System of first order differential equations that describes the dynamics
+%of the pendulum cart system
+xdot(1) = x(2);
+xdot(2) = (u*R-b*x(2)-m*r*thetacombined*cos(x(3))+m*r*x(4)^2*sin(x(3)))/(M+m);
+xdot(3) = x(4);
+xdot(4) = thetacombined;
+end
+

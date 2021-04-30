@@ -1,0 +1,8 @@
+x = [0;0;0;0]
+u = 0;
+s = tf('s');
+%gs = linearizedDynamics(x,u)
+Gs = -0.9306/(s^2 - 8.882e-16*s - 20.37)
+MotorGain = 0.22925;
+Gtmp = zpk(Gs*MotorGain)
+controlSystemDesigner('rlocus', Gtmp);
