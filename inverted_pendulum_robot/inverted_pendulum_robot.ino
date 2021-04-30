@@ -1,10 +1,14 @@
 #include "MadgwickAHRS.h"
-#include "motor-control.hpp"
+#include "motor_control.h"
 #include "twi.h" 
 
 #define MPU_READ 0xD1
 #define MPU_WRITE 0xD0
 
+
+volatile int32_t risingEdgeCapt;
+volatile int32_t fallingEdgeCapt;
+volatile int32_t differenceCapt;
 
 const int MPU_ADDR = 0x68;
 
@@ -59,6 +63,10 @@ float get_roll()
 
 void setup() {
   Serial.begin(9600);
+  sei();
+  Serial.print("In Set up");
+//  timer5init();
+
 
   TWI_init();			// Initialize the TWI
   TWI_start();			// Send a start signal
@@ -166,3 +174,46 @@ void fakeController(float pitch)
 
   
 }
+
+//void timer5init()
+//{
+//  TCNT5 = 0; //start at 0
+//  TCCR5B |= (1 << CS52);
+//  TIMSK5 |= (1 << ICIE5);//enable capture interupts
+//  TCCR5B |= (1 << ICNC1); //Enable input capture noise canceller
+//  TCCR5B |= (1 << ICES5);// enables interupt rising
+//  TIFR5   = 1<<ICF5;
+//}
+//
+//
+//
+//ISR(TIMER5_CAPT_vect)        
+//{
+//  
+//  if( TCCR5B & (1 << ICES5))
+//  {
+//    risingEdgeCapt = TCNT5;
+//    Serial.print(TCNT5);
+//    TCCR5B &= ~(1 << ICES5);// enables interupt falling
+//    Serial.print("\nR -");
+//    Serial.print(risingEdgeCapt);
+//  }
+//  else
+//  {
+//    //calculate time :) anoushka dont know subtracting top=65,536
+//    fallingEdgeCapt = TCNT5;
+//    Serial.print(TCNT5);
+//    differenceCapt = fallingEdgeCapt - risingEdgeCapt;
+//    if(differenceCapt < 0)
+//    {
+//      differenceCapt += 65536;
+//    }
+//    TCCR5B |= (1 << ICES5);// enables interupt rising
+//    Serial.print("\nF");
+//    Serial.print(fallingEdgeCapt);
+//  }
+//
+//  TCNT1 = 0;
+//  Serial.print(differenceCapt);
+//  
+//}
