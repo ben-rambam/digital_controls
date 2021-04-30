@@ -8,4 +8,4 @@ T = 1/f
 
 Gd = c2d(Gs, T, 'zoh')
 
-controlSystemDesigner(Gd)
+controlSystemDesigner(Gd, 'rlocus')
